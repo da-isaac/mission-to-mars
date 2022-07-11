@@ -14,7 +14,8 @@ def scrape_all():
         'news_paragraph': news_paragraph,
         'featured_image': featured_image(browser),
         'facts': mars_facts(),
-        'last_modified': dt.datetime.now()
+        'last_modified': dt.datetime.now(),
+        'hem_imgs': mars_hemi_imgs(browser)
     }
 
     browser.quit()
@@ -78,6 +79,36 @@ def mars_facts():
     df.set_index('description', inplace=True)
 
     return df.to_html()
+
+def mars_hemi_imgs(browser):
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+
+    hemisphere_image_urls = []
+
+    html = browser.html
+    hems_soup = soup(html, 'html.parser')
+    titles = hems_soup.find_all('div', class_='item')
+
+    img_links = browser.find_by_tag('img.thumb')
+    
+    for x in range(0, len(img_links)):
+        # img_links[x].click()
+         browser.find_by_tag('img.thumb')[x].click()
+
+         jpg_html = browser.html
+         jpg_soup = soup(jpg_html, 'html.parser')
+         jpg_src = jpg_soup.find('img', class_='wide-image').get('src')
+         hemisphere_image_urls.append(
+             {
+                 'img_url': 'https://marshemispheres.com/' + jpg_src,
+                 'title': titles[x].find('h3').text
+             }
+         )
+         browser.back()
+
+    return hemisphere_image_urls
+
 
 if __name__ == '__main__':
     print(scrape_all())
